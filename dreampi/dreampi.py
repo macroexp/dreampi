@@ -344,13 +344,7 @@ class Modem(object):
         self._serial = None
         self._sending_tone = False
 
-        if send_dial_tone:
-            self._dial_tone_wav = self._read_dial_tone()
-        else:
-            self._dial_tone_wav = None
-
         self._time_since_last_dial_tone = None
-        self._dial_tone_counter = 0
 
     @property
     def device_speed(self):
@@ -359,16 +353,6 @@ class Modem(object):
     @property
     def device_name(self):
         return self._device
-
-    def _read_dial_tone(self):
-        this_dir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
-        dial_tone_wav = os.path.join(this_dir, "dial-tone.wav")
-
-        with open(dial_tone_wav, "rb") as f:
-            dial_tone = f.read()  # Read the entire wav file
-            dial_tone = dial_tone[44:]  # Strip the header (44 bytes)
-
-        return dial_tone
 
     def connect(self):
         if self._serial:
@@ -390,14 +374,9 @@ class Modem(object):
         self.send_command("ATE0")  # Don't echo our responses
 
     def start_dial_tone(self):
-        if not self._dial_tone_wav:
-            return
-
         self.reset()
         self.send_command("AT+FCLASS=8")  # Enter voice mode
         self.send_command("AT+VLS=1")  # Go off-hook
-        self.send_command("AT+VSM=1,8000")  # 8 bit unsigned PCM
-        self.send_command("AT+VTX")  # Voice transmission mode
 
         self._sending_tone = True
 
@@ -405,16 +384,9 @@ class Modem(object):
             datetime.now() - timedelta(seconds=100)
         )
 
-        self._dial_tone_counter = 0
-
     def stop_dial_tone(self):
         if not self._sending_tone:
             return
-
-        self._serial.write("\0{}{}\r\n".format(chr(0x10), chr(0x03)))
-        self.send_escape()
-        self.send_command("ATH0")  # Go on-hook
-        self.reset()  # Reset the modem
         self._sending_tone = False
 
     def answer(self):
@@ -465,18 +437,15 @@ class Modem(object):
     def update(self):
         now = datetime.now()
         if self._sending_tone:
-            # Keep sending dial tone
-            BUFFER_LENGTH = 1000
-            TIME_BETWEEN_UPLOADS_MS = (1000.0 / 8000.0) * BUFFER_LENGTH
-
-            milliseconds = (now - self._time_since_last_dial_tone).microseconds * 1000
-            if not self._time_since_last_dial_tone or milliseconds >= TIME_BETWEEN_UPLOADS_MS:
-                byte = self._dial_tone_wav[self._dial_tone_counter:self._dial_tone_counter+BUFFER_LENGTH]
-                self._dial_tone_counter += BUFFER_LENGTH
-                if self._dial_tone_counter >= len(self._dial_tone_wav):
-                    self._dial_tone_counter = 0
-                self._serial.write(byte)
-                self._time_since_last_dial_tone = now
+            TIME_BETWEEN_DIALTONES = 500  # milliseconds
+            milliseconds = (now - self._time_since_last_dial_tone).microseconds / 1000
+            if milliseconds >= TIME_BETWEEN_DIALTONES:
+                """ generate dialtone for 1 full second
+                it should be 440, 350, but my modem at least (USR 5637) does not correctly
+                generate tones when they're that close - 349 works and is recognized by
+                DreamCast (USA) modem as valid dialtone. May need to be adjusted for PAL? """
+                self.send_command("AT+VTS=[440,349,100]")
+                self._time_since_last_dial_tone = datetime.now()
 
 
 class GracefulKiller(object):
@@ -602,7 +571,8 @@ def enable_prom_mode_on_wlan0():
     """
 
     try:
-        subprocess.check_call("sudo ifconfig wlan0 promisc".split())
+        subprocess.check_call("sudo ifconfig wlan0 promisc".split(),
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         logging.info("Promiscuous mode set on wlan0")
     except subprocess.CalledProcessError:
         logging.info("Attempted to set promiscuous mode on wlan0 but was unsuccessful")
