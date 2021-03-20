@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!bin/python3
 
 import atexit
 import serial
