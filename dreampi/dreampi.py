@@ -14,6 +14,8 @@ import signal
 import re
 import config_server
 import urllib
+import urllib.error
+import urllib.request
 import iptc
 
 from dcnow import DreamcastNowService
