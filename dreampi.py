@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import atexit
 import serial
@@ -14,11 +14,10 @@ import signal
 import re
 import config_server
 import urllib
-import urllib2
 import iptc
 
 from dcnow import DreamcastNowService
-from port_forwarding import PortForwarding
+# from port_forwarding import PortForwarding
 
 from datetime import datetime, timedelta
 
@@ -66,7 +65,7 @@ def update_dns_file():
         and provides a backup if that ever goes down)
     """
     try:
-        response = urllib2.urlopen(DNS_FILE)
+        response = urllib.request.urlopen(DNS_FILE)
         # Stop the server
         subprocess.check_call("sudo service dnsmasq stop".split())
 
@@ -76,7 +75,7 @@ def update_dns_file():
 
         # Start the server again
         subprocess.check_call("sudo service dnsmasq start".split())
-    except (urllib2.URLError, urllib2.HTTPError, IOError):
+    except (urllib.URLError, urllib.HTTPError, IOError):
         logging.exception("Unable to update the DNS file for some reason, will use upstream")
         pass
 
@@ -90,7 +89,7 @@ def start_afo_patching():
     def fetch_replacement_ip():
         url = "http://dreamcast.online/afo.txt"
         try:
-            return urllib.urlopen(url).read().strip()
+            return urllib.request.urlopen(url).read().strip()
         except IOError:
             return None
 
@@ -127,8 +126,7 @@ def stop_afo_patching():
 def start_process(name):
     try:
         logger.info("Starting {} process - Thanks Jonas Karlsson!".format(name))
-        with open(os.devnull, 'wb') as devnull:
-            subprocess.check_call(["sudo", "service", name, "start"], stdout=devnull)
+        subprocess.check_call(["sudo", "service", name, "start"], stdout=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, IOError):
         logging.warning("Unable to start the {} process".format(name))
 
@@ -136,8 +134,7 @@ def start_process(name):
 def stop_process(name):
     try:
         logger.info("Stopping {} process".format(name))
-        with open(os.devnull, 'wb') as devnull:
-            subprocess.check_call(["sudo", "service", name, "stop"], stdout=devnull)
+        subprocess.check_call(["sudo", "service", name, "stop"], stdout=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, IOError):
         logging.warning("Unable to stop the {} process".format(name))
 
@@ -151,7 +148,7 @@ def get_default_iface_name_linux():
                 if dest != '00000000' or not int(flags, 16) & 2:
                     continue
                 return iface
-            except:
+            except BaseException:
                 continue
 
 
@@ -246,7 +243,7 @@ def detect_device_and_speed():
         lines = output.split("\n")
 
         for line in lines:
-            match = re.match("(.+)\<Info\>\:\sSpeed\s(\d+);", line.strip())
+            match = re.match(r"(.+)\<Info\>\:\sSpeed\s(\d+);", line.strip())
             if match:
                 device = match.group(1)
                 speed = match.group(2)
@@ -258,7 +255,7 @@ def detect_device_and_speed():
         else:
             logger.info("No device detected")
 
-    except:
+    except BaseException:
         logger.exception("Unable to detect modem. Falling back to ttyACM0")
     return ("ttyACM0", MAX_SPEED)
 
@@ -634,7 +631,7 @@ def main():
         start_process("dcgamespy")
         start_process("dc2k2")
         return process()
-    except:
+    except BaseException:
         logger.exception("Something went wrong...")
         return 1
     finally:

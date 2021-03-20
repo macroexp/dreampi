@@ -3,7 +3,7 @@ import threading
 import cgi
 import os
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from dcnow import CONFIGURATION_FILE, scan_mac_address
 
 
@@ -15,7 +15,7 @@ class DreamPiConfigurationService(BaseHTTPRequestHandler):
             postvars = cgi.parse_multipart(self.rfile, pdict)
         elif ctype == 'application/x-www-form-urlencoded':
             length = int(self.headers.getheader('content-length'))
-            postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+            postvars = cgi.parse(self.rfile.read(length), keep_blank_values=1)
         else:
             postvars = {}
 
@@ -36,7 +36,6 @@ class DreamPiConfigurationService(BaseHTTPRequestHandler):
             "mac_address": scan_mac_address(),
             "is_enabled": enabled_state
         }))
-
 
     def do_POST(self):
         enabled_state = True
@@ -64,12 +63,14 @@ class DreamPiConfigurationService(BaseHTTPRequestHandler):
 server = None
 thread = None
 
+
 def start():
     global server
     global thread
     server = HTTPServer(('0.0.0.0', 1998), DreamPiConfigurationService)
     thread = threading.Thread(target=server.serve_forever)
     thread.start()
+
 
 def stop():
     global server
