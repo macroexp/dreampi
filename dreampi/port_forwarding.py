@@ -1,5 +1,6 @@
 import miniupnpc
 
+
 class PortForwarding:
     """
         This class is used to forward the ports of all supported Dreamcast games
@@ -43,20 +44,26 @@ class PortForwarding:
                 port, proto, game = portinfo
 
                 if isinstance(port, list):
-                    self._logger.info("Trying to create UPnP port mapping for {} ({}-{}/{})".format(game, port[0], port[-1], proto))
+                    self._logger.info("Trying to create UPnP port mapping for {} ({}-{}/{})"
+                                      .format(game, port[0], port[-1], proto))
 
                     for p in port:
                         try:
-                            self._upnp.addportmapping(p, proto, self._dreamcast_ip, p, "DreamPi: {}".format(game), '')
+                            self._upnp.addportmapping(p, proto, self._dreamcast_ip, p, "DreamPi: {}"
+                                                      .format(game), '')
                         except Exception as e:
-                            self._logger.warn("Could not create UPnP port mapping for {} ({}/{}): {}".format(game, p, proto, e))
+                            self._logger.warn("Could not create UPnP port mapping for {} ({}/{}): {}"
+                                              .format(game, p, proto, e))
                 else:
-                    self._logger.info("Trying to create UPnP port mapping for {} ({}/{})".format(game, port, proto))
+                    self._logger.info("Trying to create UPnP port mapping for {} ({}/{})"
+                                      .format(game, port, proto))
 
                     try:
-                        self._upnp.addportmapping(port, proto, self._dreamcast_ip, port, "DreamPi: {}".format(game), '')
+                        self._upnp.addportmapping(port, proto, self._dreamcast_ip, port, "DreamPi: {}"
+                                                  .format(game), '')
                     except Exception as e:
-                        self._logger.warn("Could not create UPnP port mapping for {} ({}/{}): {}".format(game, port, proto, e))
+                        self._logger.warn("Could not create UPnP port mapping for {} ({}/{}): {}"
+                                          .format(game, port, proto, e))
 
     def delete_all(self):
         """
@@ -67,27 +74,32 @@ class PortForwarding:
         try:
             self._upnp.discover()
             self._upnp.selectigd()
-        except Exception as e:
-            self._logger.info("Could not find a UPnP internet gateway device on your network. Not automatically forwarding ports.")
+        except Exception:
+            self._logger.info("Could not find a UPnP internet gateway device on your network. \
+                              Not automatically forwarding ports.")
             return False
 
         for portinfo in self.PORTS:
             port, proto, game = portinfo
 
             if isinstance(port, list):
-                self._logger.info("Trying to delete UPnP port mapping for {} ({}-{}/{})".format(game, port[0], port[-1], proto))
+                self._logger.info("Trying to delete UPnP port mapping for {} ({}-{}/{})"
+                                  .format(game, port[0], port[-1], proto))
 
                 for p in port:
                     try:
                         self._upnp.deleteportmapping(p, proto)
                     except Exception as e:
-                        self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}".format(game, p, proto, e))
+                        self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}"
+                                           .format(game, p, proto, e))
             else:
-                self._logger.info("Trying to delete UPnP port mapping for {} ({}/{})".format(game, port, proto))
+                self._logger.info("Trying to delete UPnP port mapping for {} ({}/{})"
+                                  .format(game, port, proto))
 
                 try:
                     self._upnp.deleteportmapping(port, proto)
                 except Exception as e:
-                    self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}".format(game, port, proto, e))
+                    self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}"
+                                       .format(game, port, proto, e))
 
         return True
