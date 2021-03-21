@@ -345,12 +345,14 @@ class Daemon(object):
 
 
 class Modem(object):
-    def __init__(self, device, speed):
-        self._device, self._speed = device, speed
+    def __init__(self, device, speed, send_dial_tone=True):
         self._serial = None
         self._sending_tone = False
 
-        self._time_since_last_dial_tone = None
+        self._sending_tone = send_dial_tone
+        self._time_since_last_dial_tone = (
+            datetime.now() - timedelta(seconds=100)
+        )
 
     @property
     def device_speed(self):
@@ -379,16 +381,10 @@ class Modem(object):
         self.send_command("ATZ0")  # Send reset command
         self.send_command("ATE0")  # Don't echo our responses
 
-    def start_dial_tone(self):
+    def set_voicemode(self):
         self.reset()
         self.send_command("AT+FCLASS=8")  # Enter voice mode
         self.send_command("AT+VLS=1")  # Go off-hook
-
-        self._sending_tone = True
-
-        self._time_since_last_dial_tone = (
-            datetime.now() - timedelta(seconds=100)
-        )
 
     def stop_dial_tone(self):
         if not self._sending_tone:
@@ -499,7 +495,7 @@ def process():
 
         time.sleep(5)
 
-    modem = Modem(device_and_speed[0], device_and_speed[1])
+    modem = Modem(device_and_speed[0], device_and_speed[1], dial_tone_enabled)
     dreamcast_ip = autoconfigure_ppp(modem.device_name, modem.device_speed)
 
     if do_upnp:
@@ -513,8 +509,7 @@ def process():
     mode = "LISTENING"
 
     modem.connect()
-    if dial_tone_enabled:
-        modem.start_dial_tone()
+    modem.set_voicemode()
 
     time_digit_heard = None
 
