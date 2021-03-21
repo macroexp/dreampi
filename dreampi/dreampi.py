@@ -256,7 +256,7 @@ def detect_device_and_speed():
                 logger.info("Detected device {} with speed {}".format(device, speed))
 
                 # Many modems report speeds higher than they can handle so we cap
-                # to 56k
+                # to MAX_SPEED
                 return device, min(speed, MAX_SPEED)
         else:
             logger.info("No device detected")
@@ -346,6 +346,7 @@ class Daemon(object):
 
 class Modem(object):
     def __init__(self, device, speed, send_dial_tone=True):
+        self._device, self._speed = device, speed
         self._serial = None
         self._sending_tone = False
 
