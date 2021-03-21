@@ -110,7 +110,7 @@ def start_afo_patching():
     rule.protocol = "tcp"
     rule.dst = "63.251.242.131"
     rule.create_target("DNAT")
-    rule.target.to_destination = str(replacement, 'ascii')
+    rule.target.to_destination = replacement
 
     chain.append_rule(rule)
 
