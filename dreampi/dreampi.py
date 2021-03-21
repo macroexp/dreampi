@@ -369,7 +369,7 @@ class Modem(object):
 
         logger.info("Opening serial interface to {}".format(self._device))
         self._serial = serial.Serial(
-            "/dev/{}".format(self._device), self._speed, timeout=0
+            "/dev/{}".format(self._device), self._speed, timeout=2
         )
 
     def disconnect(self):
