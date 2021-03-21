@@ -17,6 +17,7 @@ import urllib
 import urllib.error
 import urllib.request
 import iptc
+import time
 
 from dcnow import DreamcastNowService
 from port_forwarding import PortForwarding
@@ -451,6 +452,8 @@ class Modem(object):
                 DreamCast (USA) modem as valid dialtone. May need to be adjusted for PAL? """
                 self.send_command("AT+VTS=[440,349,100]")
                 self._time_since_last_dial_tone = datetime.now()
+            else:
+                time.sleep(100);
 
 
 class GracefulKiller(object):
