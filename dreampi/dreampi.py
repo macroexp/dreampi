@@ -441,8 +441,8 @@ class Modem(object):
         time.sleep(1.0)
 
     def update(self):
-        now = datetime.now()
         if self._sending_tone:
+            now = datetime.now()
             TIME_BETWEEN_DIALTONES = 500  # milliseconds
             milliseconds = (now - self._time_since_last_dial_tone).microseconds / 1000
             if milliseconds >= TIME_BETWEEN_DIALTONES:
@@ -454,6 +454,8 @@ class Modem(object):
                 self._time_since_last_dial_tone = datetime.now()
             else:
                 time.sleep(100)
+        else:
+            time.sleep(100)
 
 
 class GracefulKiller(object):
