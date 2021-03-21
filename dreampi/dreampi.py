@@ -369,7 +369,7 @@ class Modem(object):
 
         logger.info("Opening serial interface to {}".format(self._device))
         self._serial = serial.Serial(
-            "/dev/{}".format(self._device), self._speed, timeout=2
+            "/dev/{}".format(self._device), self._speed, timeout=0
         )
 
     def disconnect(self):
@@ -402,7 +402,7 @@ class Modem(object):
         logger.info(subprocess.check_output(["pon", "dreamcast"]))
         logger.info("Connected")
 
-    def send_command(self, command, timeout=2, ignore_responses=None):
+    def send_command(self, command, timeout=60, ignore_responses=None):
         ignore_responses = ignore_responses or []  # Things to completely ignore
 
         VALID_RESPONSES = ["OK", "ERROR", "CONNECT", "VCON"]
@@ -525,6 +525,7 @@ def process():
         if mode == "LISTENING":
             modem.update()
             char = modem._serial.read(1).strip()
+            print(".", end="")
             if not char:
                 continue
 
