@@ -402,7 +402,7 @@ class Modem(object):
         logger.info(subprocess.check_output(["pon", "dreamcast"]))
         logger.info("Connected")
 
-    def send_command(self, command, timeout=60, ignore_responses=None):
+    def send_command(self, command, timeout=2, ignore_responses=None):
         ignore_responses = ignore_responses or []  # Things to completely ignore
 
         VALID_RESPONSES = ["OK", "ERROR", "CONNECT", "VCON"]
