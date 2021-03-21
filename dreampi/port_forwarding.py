@@ -86,6 +86,7 @@ class PortForwarding:
                 self._logger.info("Trying to delete UPnP port mapping for {} ({}-{}/{})"
                                   .format(game, port[0], port[-1], proto))
                 try:
+                    # last parameter to this method, 'manage', unknown what the purpose is. fails with 0 though
                     self._upnp.deleteportmappingrange(port[0], port[-1], proto, len(range))
                 except Exception as e:
                     self._logger.debug("Could not delete UPnP port mapping for {} ({}-{}/{}): {}"
