@@ -345,7 +345,7 @@ class Daemon(object):
 
 
 class Modem(object):
-    def __init__(self, device, speed, send_dial_tone=True):
+    def __init__(self, device, speed):
         self._device, self._speed = device, speed
         self._serial = None
         self._sending_tone = False
@@ -453,7 +453,7 @@ class Modem(object):
                 self.send_command("AT+VTS=[440,349,100]")
                 self._time_since_last_dial_tone = datetime.now()
             else:
-                time.sleep(100);
+                time.sleep(100)
 
 
 class GracefulKiller(object):
@@ -497,7 +497,7 @@ def process():
 
         time.sleep(5)
 
-    modem = Modem(device_and_speed[0], device_and_speed[1], dial_tone_enabled)
+    modem = Modem(device_and_speed[0], device_and_speed[1])
     dreamcast_ip = autoconfigure_ppp(modem.device_name, modem.device_speed)
 
     if do_upnp:
