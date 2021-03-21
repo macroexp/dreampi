@@ -85,13 +85,17 @@ class PortForwarding:
             if isinstance(port, range):
                 self._logger.info("Trying to delete UPnP port mapping for {} ({}-{}/{})"
                                   .format(game, port[0], port[-1], proto))
-
-                for p in port:
-                    try:
-                        self._upnp.deleteportmapping(p, proto)
-                    except Exception as e:
-                        self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}"
-                                           .format(game, p, proto, e))
+                try:
+                    self._upnp.deleteportmappingrange(port[0], port[-1], proto)
+                except Exception as e:
+                    self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}"
+                                        .format(game, p, proto, e))
+                # for p in port:
+                #     try:
+                #         self._upnp.deleteportmapping(p, proto)
+                #     except Exception as e:
+                #         self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}"
+                #                            .format(game, p, proto, e))
             else:
                 self._logger.info("Trying to delete UPnP port mapping for {} ({}/{})"
                                   .format(game, port, proto))
