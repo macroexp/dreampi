@@ -160,10 +160,10 @@ def ip_exists(ip, iface):
     command = ["arp", "-a", "-i", iface]
     output = subprocess.check_output(command)
     if ('(%s)' % ip) in str(output, 'ascii'):
-        logger.info("IP existed at %s", ip)
+        logger.debug("IP existed at %s", ip)
         return True
     else:
-        logger.info("Free IP at %s", ip)
+        logger.debug("Free IP at %s", ip)
         return False
 
 
@@ -232,7 +232,7 @@ ENABLE_SPEED_DETECTION = False  # Set this to true if you want to use wvdialconf
 
 
 def detect_device_and_speed():
-    MAX_SPEED = 57600
+    MAX_SPEED = 115200
 
     if not ENABLE_SPEED_DETECTION:
         # By default we don't detect the speed or device as it's flakey in later
@@ -620,7 +620,11 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.setLevel(logging.INFO)
+    if "--debug" in sys.argv:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
     handler = logging.handlers.SysLogHandler(address='/dev/log')
     logger.addHandler(handler)
 

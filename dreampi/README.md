@@ -13,5 +13,10 @@ pip install -r requirements.txt
 Then, to execute:
 
 ```
-./dreampi.py --no-daemon
+./dreampi.py [OPTION]...
+
+Options:
+    --no-daemon             don't daemonize or detach from shell
+    --debug                 enable DEBUG logging (lots of output)
+    --disable-dial-tone     don't try to generate dialtone - make sure to enable blind dialing (doesn't work with all games)
 ```
