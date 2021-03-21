@@ -563,7 +563,7 @@ def process():
                 modem.start_dial_tone()
 
     # Temporarily disabled, see above
-    # port_forwarding.delete_all()
+    port_forwarding.delete_all()
     return 0
 
 
