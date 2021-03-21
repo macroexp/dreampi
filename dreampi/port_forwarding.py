@@ -43,7 +43,7 @@ class PortForwarding:
             for portinfo in self.PORTS:
                 port, proto, game = portinfo
 
-                if isinstance(port, list):
+                if isinstance(port, range):
                     self._logger.info("Trying to create UPnP port mapping for {} ({}-{}/{})"
                                       .format(game, port[0], port[-1], proto))
 
@@ -82,7 +82,7 @@ class PortForwarding:
         for portinfo in self.PORTS:
             port, proto, game = portinfo
 
-            if isinstance(port, list):
+            if isinstance(port, range):
                 self._logger.info("Trying to delete UPnP port mapping for {} ({}-{}/{})"
                                   .format(game, port[0], port[-1], proto))
 
