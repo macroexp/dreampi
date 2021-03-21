@@ -78,7 +78,7 @@ def update_dns_file():
         # Start the server again
         subprocess.check_call("sudo service dnsmasq start".split())
     except (urllib.error.URLError, urllib.error.HTTPError, IOError):
-        logging.exception("Unable to update the DNS file for some reason, will use upstream")
+        logging.warning("Unable to update the DNS file for some reason, will use upstream")
         pass
 
 
@@ -91,7 +91,8 @@ def start_afo_patching():
     def fetch_replacement_ip():
         url = "http://dreamcast.online/afo.txt"
         try:
-            return urllib.request.urlopen(url).read().strip()
+            req = urllib.request.urlopen(url)
+            return str(req.read(), 'utf-8').strip()
         except IOError:
             return None
 
@@ -105,10 +106,11 @@ def start_afo_patching():
     chain = iptc.Chain(table, "PREROUTING")
 
     rule = iptc.Rule()
+    rule.name = "afo_rule"
     rule.protocol = "tcp"
     rule.dst = "63.251.242.131"
     rule.create_target("DNAT")
-    rule.target.to_destination = replacement
+    rule.target.to_destination = str(replacement, 'ascii')
 
     chain.append_rule(rule)
 
@@ -157,7 +159,7 @@ def get_default_iface_name_linux():
 def ip_exists(ip, iface):
     command = ["arp", "-a", "-i", iface]
     output = subprocess.check_output(command)
-    if ("(%s)" % ip) in output:
+    if ('(%s)' % ip) in str(output, 'ascii'):
         logger.info("IP existed at %s", ip)
         return True
     else:
@@ -190,6 +192,7 @@ def autoconfigure_ppp(device, speed):
     """
 
     gateway_ip = subprocess.check_output("route -n | grep 'UG[ \t]' | awk '{print $2}'", shell=True)
+    gateway_ip = str(gateway_ip, 'ascii').strip()
     subnet = gateway_ip.split(".")[:3]
 
     PEERS_TEMPLATE = """
@@ -410,14 +413,14 @@ class Modem(object):
             VALID_RESPONSES.remove(ignore)
 
         final_command = "%s\r\n" % command
-        self._serial.write(final_command)
-        logger.info(final_command)
+        self._serial.write(final_command.encode())
+        logger.debug(final_command)
 
         start = datetime.now()
 
         line = ""
         while True:
-            new_data = self._serial.readline().strip()
+            new_data = str(self._serial.readline(), 'ascii').strip()
 
             if not new_data:
                 continue
@@ -425,7 +428,7 @@ class Modem(object):
             line = line + new_data
             for resp in VALID_RESPONSES:
                 if resp in line:
-                    logger.info(line[line.find(resp):])
+                    logger.debug(line[line.find(resp):])
                     return  # We are done
 
             if (datetime.now() - start).total_seconds() > timeout:
