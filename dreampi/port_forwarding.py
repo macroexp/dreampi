@@ -38,13 +38,13 @@ class PortForwarding:
         """
             This method deletes all forwards and then re-creates them if possible.
         """
-
         if self.delete_all():
+            self._logger.info("Creating UPnP port mappings")
             for portinfo in self.PORTS:
                 port, proto, game = portinfo
 
                 if isinstance(port, range):
-                    self._logger.info("Trying to create UPnP port mapping for {} ({}-{}/{})"
+                    self._logger.debug("Trying to create UPnP port mapping for {} ({}-{}/{})"
                                       .format(game, port[0], port[-1], proto))
 
                     for p in port:
@@ -55,7 +55,7 @@ class PortForwarding:
                             self._logger.warn("Could not create UPnP port mapping for {} ({}/{}): {}"
                                               .format(game, p, proto, e))
                 else:
-                    self._logger.info("Trying to create UPnP port mapping for {} ({}/{})"
+                    self._logger.debug("Trying to create UPnP port mapping for {} ({}/{})"
                                       .format(game, port, proto))
 
                     try:
@@ -78,12 +78,12 @@ class PortForwarding:
             self._logger.info("Could not find a UPnP internet gateway device on your network. \
                               Not automatically forwarding ports.")
             return False
-
+        self._logger.info("Cleaning up UPnP port mappings")
         for portinfo in self.PORTS:
             port, proto, game = portinfo
 
             if isinstance(port, range):
-                self._logger.info("Trying to delete UPnP port mapping for {} ({}-{}/{})"
+                self._logger.debug("Trying to delete UPnP port mapping for {} ({}-{}/{})"
                                   .format(game, port[0], port[-1], proto))
                 # try:
                 #     # last parameter to this method, 'manage', unknown what the purpose is. fails with 0 though
@@ -98,7 +98,7 @@ class PortForwarding:
                         self._logger.debug("Could not delete UPnP port mapping for {} ({}/{}): {}"
                                            .format(game, p, proto, e))
             else:
-                self._logger.info("Trying to delete UPnP port mapping for {} ({}/{})"
+                self._logger.debug("Trying to delete UPnP port mapping for {} ({}/{})"
                                   .format(game, port, proto))
 
                 try:

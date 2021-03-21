@@ -468,6 +468,7 @@ def process():
     killer = GracefulKiller()
 
     dial_tone_enabled = "--disable-dial-tone" not in sys.argv
+    do_upnp = "--enable-upnp" in sys.argv
 
     # Make sure pppd isn't running
     with open(os.devnull, 'wb') as devnull:
@@ -496,12 +497,13 @@ def process():
     modem = Modem(device_and_speed[0], device_and_speed[1], dial_tone_enabled)
     dreamcast_ip = autoconfigure_ppp(modem.device_name, modem.device_speed)
 
-    # Get a port forwarding object, now that we know the DC IP.
-    port_forwarding = PortForwarding(dreamcast_ip, logger)
+    if do_upnp:
+        # Get a port forwarding object, now that we know the DC IP.
+        port_forwarding = PortForwarding(dreamcast_ip, logger)
 
-    # Disabled until we can figure out a faster way of doing this.. it takes a minute
-    # on my router which is way too long to wait for the DreamPi to boot
-    port_forwarding.forward_all()
+        # Disabled by default until we can figure out a faster way of doing this.. it takes a minute
+        # on my router which is way too long to wait for the DreamPi to boot (it only takes 10 seconds on mine)
+        port_forwarding.forward_all()
 
     mode = "LISTENING"
 
@@ -562,8 +564,8 @@ def process():
             if dial_tone_enabled:
                 modem.start_dial_tone()
 
-    # Temporarily disabled, see above
-    port_forwarding.delete_all()
+    if do_upnp:
+        port_forwarding.delete_all()
     return 0
 
 
